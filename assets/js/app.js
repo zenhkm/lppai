@@ -117,26 +117,29 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast(el.innerHTML, type, 6000);
         el.remove();
     });
-
-    // Replace browser confirm() on data-confirm buttons
-    document.querySelectorAll('[data-confirm]').forEach(function(el) {
-        el.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            var msg  = this.dataset.confirm;
-            var type = this.classList.contains('btn-warning') ? 'warning' : 'danger';
-            var form = this.closest('form');
-            var self = this;
-            showConfirm(msg, function() {
-                if (form) {
-                    form.submit();
-                } else if (self.tagName === 'A') {
-                    window.location.href = self.href;
-                }
-            }, type);
-        });
-    });
 });
+
+// Event delegation untuk data-confirm — bekerja untuk semua halaman
+// termasuk DataTables (pagination, dll) tanpa perlu re-attach listener
+document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-confirm]');
+    if (!el) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var msg  = el.dataset.confirm;
+    var type = el.classList.contains('btn-warning') ? 'warning' : 'danger';
+    var form = el.closest('form');
+
+    showConfirm(msg, function() {
+        if (form) {
+            form.submit();
+        } else if (el.tagName === 'A') {
+            window.location.href = el.href;
+        }
+    }, type);
+}, true); // useCapture=true agar menangkap sebelum handler lain
 
 // Modal functions
 function openModal(id) {
