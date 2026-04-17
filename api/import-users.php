@@ -4,15 +4,32 @@
  */
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../logs/error.log');
 error_reporting(E_ALL);
 
-// Tangkap semua error/exception sebagai JSON
+ob_start();
+
+// Tangkap fatal error
+register_shutdown_function(function() {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        ob_clean();
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Fatal Error: ' . $err['message'] . ' di ' . $err['file'] . ' baris ' . $err['line']]);
+    }
+});
+
+// Tangkap exception
 set_exception_handler(function($e) {
+    ob_clean();
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Exception: ' . $e->getMessage()]);
     exit;
 });
+
+// Tangkap non-fatal error
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    ob_clean();
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => "PHP Error [$errno]: $errstr di $errfile baris $errline"]);
     exit;

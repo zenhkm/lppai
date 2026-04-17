@@ -7,6 +7,24 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../logs/error.log');
 error_reporting(E_ALL);
 
+ob_start();
+
+register_shutdown_function(function() {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        ob_clean();
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Fatal Error: ' . $err['message'] . ' di ' . $err['file'] . ' baris ' . $err['line']]);
+    }
+});
+
+set_exception_handler(function($e) {
+    ob_clean();
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Exception: ' . $e->getMessage()]);
+    exit;
+});
+
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
