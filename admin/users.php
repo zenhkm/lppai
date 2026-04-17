@@ -76,6 +76,103 @@ include __DIR__ . '/../includes/header.php';
     <div class="alert alert-<?= $msgType ?>"><?= sanitize($message) ?></div>
 <?php endif; ?>
 
+<!-- Import & Download Template -->
+<div class="card">
+    <div class="card-header">📥 Import Pengguna dari Excel/CSV</div>
+    <div class="card-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <a href="<?= BASE_URL ?>/api/download-template.php" class="btn btn-primary" style="width:auto;">
+            📄 Download Template CSV
+        </a>
+        <button type="button" class="btn btn-primary" style="width:auto;background:#2d7a4a;" onclick="document.getElementById('modal-import').style.display='flex'">
+            📤 Import dari CSV
+        </button>
+        <small style="color:#888;">Download template, isi data di Excel, lalu upload file CSV-nya.</small>
+    </div>
+</div>
+
+<!-- Modal Import -->
+<div id="modal-import" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+        <h3 style="margin-bottom:16px;">📤 Import Pengguna dari CSV</h3>
+        <p style="margin-bottom:16px;color:#666;font-size:14px;">
+            Upload file CSV sesuai template. Kolom wajib: <strong>username, password, nama_lengkap</strong>.
+            Username yang sudah ada akan dilewati.
+        </p>
+        <form id="form-import">
+            <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
+            <div class="form-group">
+                <label>Pilih File CSV</label>
+                <input type="file" name="csv_file" id="csv_file" accept=".csv,.txt" required
+                    style="padding:10px;border:2px dashed #ccc;border-radius:10px;width:100%;cursor:pointer;">
+            </div>
+            <div id="import-result" style="display:none;margin-bottom:16px;padding:12px;border-radius:10px;font-size:14px;"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                <button type="button" class="btn btn-sm btn-warning" onclick="document.getElementById('modal-import').style.display='none'">
+                    Batal
+                </button>
+                <button type="submit" class="btn btn-primary" id="btn-import" style="width:auto;">
+                    📤 Mulai Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('form-import').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const btn = document.getElementById('btn-import');
+    const result = document.getElementById('import-result');
+
+    btn.disabled = true;
+    btn.textContent = 'Mengimport...';
+    result.style.display = 'none';
+
+    fetch('<?= BASE_URL ?>/api/import-users.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        result.style.display = 'block';
+        if (data.success) {
+            result.style.background = '#d4edda';
+            result.style.color = '#155724';
+            let html = '<strong>✅ ' + data.message + '</strong>';
+            if (data.errors && data.errors.length > 0) {
+                html += '<ul style="margin-top:8px;padding-left:20px;">';
+                data.errors.forEach(err => html += '<li>' + err + '</li>');
+                html += '</ul>';
+            }
+            result.innerHTML = html;
+            if (data.imported > 0) {
+                setTimeout(() => location.reload(), 2000);
+            }
+        } else {
+            result.style.background = '#f8d7da';
+            result.style.color = '#721c24';
+            result.innerHTML = '<strong>❌ ' + data.message + '</strong>';
+        }
+    })
+    .catch(() => {
+        result.style.display = 'block';
+        result.style.background = '#f8d7da';
+        result.style.color = '#721c24';
+        result.innerHTML = '<strong>❌ Terjadi kesalahan saat upload.</strong>';
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = '📤 Mulai Import';
+    });
+});
+
+// Tutup modal jika klik luar
+document.getElementById('modal-import').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+});
+</script>
+
 <!-- Create User Form -->
 <div class="card">
     <div class="card-header">➕ Tambah Pengguna Baru</div>
