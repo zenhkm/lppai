@@ -20,84 +20,84 @@ function menuActive($page) {
         <?php if ($isAdmin): ?>
             <!-- ADMIN MENU -->
             <div class="menu-label">Dashboard</div>
-            <a href="<?= BASE_URL ?>/admin/dashboard.php" class="<?= menuActive('dashboard.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/dashboard.php" class="page-nav <?= menuActive('dashboard.php') ?>">
                 <span class="icon">📊</span> Dashboard Admin
             </a>
 
             <div class="menu-label">Manajemen Pretes</div>
-            <a href="<?= BASE_URL ?>/admin/pretes-jadwal.php" class="<?= menuActive('pretes-jadwal.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/pretes-jadwal.php" class="page-nav <?= menuActive('pretes-jadwal.php') ?>">
                 <span class="icon">📅</span> Kelola Jadwal Pretes
             </a>
-            <a href="<?= BASE_URL ?>/admin/pretes-peserta.php" class="<?= menuActive('pretes-peserta.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/pretes-peserta.php" class="page-nav <?= menuActive('pretes-peserta.php') ?>">
                 <span class="icon">👥</span> Data Peserta Pretes
             </a>
-            <a href="<?= BASE_URL ?>/admin/pretes-hasil.php" class="<?= menuActive('pretes-hasil.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/pretes-hasil.php" class="page-nav <?= menuActive('pretes-hasil.php') ?>">
                 <span class="icon">📝</span> Kelola Hasil Pretes
             </a>
 
             <div class="menu-label">Manajemen Tutorial</div>
-            <a href="<?= BASE_URL ?>/admin/tutorial-kelas.php" class="<?= menuActive('tutorial-kelas.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/tutorial-kelas.php" class="page-nav <?= menuActive('tutorial-kelas.php') ?>">
                 <span class="icon">🏫</span> Kelola Kelas Tutorial
             </a>
-            <a href="<?= BASE_URL ?>/admin/tutorial-peserta.php" class="<?= menuActive('tutorial-peserta.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/tutorial-peserta.php" class="page-nav <?= menuActive('tutorial-peserta.php') ?>">
                 <span class="icon">📋</span> Data Peserta Tutorial
             </a>
 
             <div class="menu-label">Pengumuman</div>
-            <a href="<?= BASE_URL ?>/admin/pengumuman.php" class="<?= menuActive('pengumuman.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/pengumuman.php" class="page-nav <?= menuActive('pengumuman.php') ?>">
                 <span class="icon">📢</span> Kelola Pengumuman
             </a>
 
             <div class="menu-label">Users</div>
-            <a href="<?= BASE_URL ?>/admin/users.php" class="<?= menuActive('users.php') ?>">
+            <a href="<?= BASE_URL ?>/admin/users.php" class="page-nav <?= menuActive('users.php') ?>">
                 <span class="icon">👤</span> Kelola Pengguna
             </a>
 
         <?php else: ?>
             <!-- MAHASISWA MENU -->
             <div class="menu-label">Dashboard</div>
-            <a href="<?= BASE_URL ?>/dashboard.php" class="<?= menuActive('dashboard.php') ?>">
+            <a href="<?= BASE_URL ?>/dashboard.php" class="page-nav <?= menuActive('dashboard.php') ?>">
                 <span class="icon">🏠</span> Dashboard
             </a>
 
             <div class="menu-label">Pretes</div>
-            <a href="<?= BASE_URL ?>/pretes-daftar.php" class="<?= menuActive('pretes-daftar.php') ?>">
+            <a href="<?= BASE_URL ?>/pretes-daftar.php" class="page-nav <?= menuActive('pretes-daftar.php') ?>">
                 <span class="icon">✍️</span> Daftar Pretes
             </a>
-            <a href="<?= BASE_URL ?>/pretes-peserta.php" class="<?= menuActive('pretes-peserta.php') ?>">
+            <a href="<?= BASE_URL ?>/pretes-peserta.php" class="page-nav <?= menuActive('pretes-peserta.php') ?>">
                 <span class="icon">📋</span> Peserta & Jadwal Pretes
             </a>
-            <a href="<?= BASE_URL ?>/pretes-hasil.php" class="<?= menuActive('pretes-hasil.php') ?>">
+            <a href="<?= BASE_URL ?>/pretes-hasil.php" class="page-nav <?= menuActive('pretes-hasil.php') ?>">
                 <span class="icon">📊</span> Hasil Pretes
             </a>
 
             <div class="menu-label">Tutorial Gelombang 1 (Ganjil)</div>
-            <a href="<?= BASE_URL ?>/tutorial-gel1-pendaftaran.php" class="<?= menuActive('tutorial-gel1-pendaftaran.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-gel1-pendaftaran.php" class="page-nav <?= menuActive('tutorial-gel1-pendaftaran.php') ?>">
                 <span class="icon">📝</span> Pendaftaran Gel. 1
             </a>
-            <a href="<?= BASE_URL ?>/tutorial-gel1-pembagian.php" class="<?= menuActive('tutorial-gel1-pembagian.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-gel1-pembagian.php" class="page-nav <?= menuActive('tutorial-gel1-pembagian.php') ?>">
                 <span class="icon">🏫</span> Pembagian Kelas Gel. 1
             </a>
-            <a href="<?= BASE_URL ?>/tutorial-gel1-kelulusan.php" class="<?= menuActive('tutorial-gel1-kelulusan.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-gel1-kelulusan.php" class="page-nav <?= menuActive('tutorial-gel1-kelulusan.php') ?>">
                 <span class="icon">🎓</span> Kelulusan Gel. 1
             </a>
 
             <div class="menu-label">Tutorial Gelombang 2 (Genap)</div>
-            <a href="<?= BASE_URL ?>/tutorial-gel2-pendaftaran.php" class="<?= menuActive('tutorial-gel2-pendaftaran.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-gel2-pendaftaran.php" class="page-nav <?= menuActive('tutorial-gel2-pendaftaran.php') ?>">
                 <span class="icon">📝</span> Pendaftaran Gel. 2
             </a>
-            <a href="<?= BASE_URL ?>/tutorial-gel2-pembagian.php" class="<?= menuActive('tutorial-gel2-pembagian.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-gel2-pembagian.php" class="page-nav <?= menuActive('tutorial-gel2-pembagian.php') ?>">
                 <span class="icon">🏫</span> Pembagian Kelas Gel. 2
             </a>
-            <a href="<?= BASE_URL ?>/tutorial-gel2-kelulusan.php" class="<?= menuActive('tutorial-gel2-kelulusan.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-gel2-kelulusan.php" class="page-nav <?= menuActive('tutorial-gel2-kelulusan.php') ?>">
                 <span class="icon">🎓</span> Kelulusan Gel. 2
             </a>
 
             <div class="menu-label">Tutorial Mandiri</div>
-            <a href="<?= BASE_URL ?>/tutorial-mandiri-pendaftaran.php" class="<?= menuActive('tutorial-mandiri-pendaftaran.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-mandiri-pendaftaran.php" class="page-nav <?= menuActive('tutorial-mandiri-pendaftaran.php') ?>">
                 <span class="icon">📝</span> Pendaftaran Mandiri
             </a>
-            <a href="<?= BASE_URL ?>/tutorial-mandiri-pembagian.php" class="<?= menuActive('tutorial-mandiri-pembagian.php') ?>">
+            <a href="<?= BASE_URL ?>/tutorial-mandiri-pembagian.php" class="page-nav <?= menuActive('tutorial-mandiri-pembagian.php') ?>">
                 <span class="icon">🏫</span> Pembagian Kelas Mandiri
             </a>
         <?php endif; ?>

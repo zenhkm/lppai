@@ -117,6 +117,146 @@ function ajaxDelete(table, id, csrfToken, rowEl, successMsg) {
 }
 
 /* =============================================
+   PAGE LOADER - AJAX Navigation
+   ============================================= */
+var PageLoader = {
+    isLoading: false,
+    currentPage: null,
+
+    // Extract page ID from URL
+    getPageFromUrl: function(pathname) {
+        pathname = pathname || window.location.pathname;
+        pathname = pathname.replace(/^.*\//, '').replace(/\.php$/, '');
+        return pathname || 'dashboard';
+    },
+
+    // Map page names to page IDs for API
+    getPageId: function(pageName) {
+        var map = {
+            'dashboard': 'dashboard',
+            'pretes-peserta': 'pretes-peserta',
+            'pretes-hasil': 'pretes-hasil',
+            'pretes-daftar': 'pretes-daftar',
+            'tutorial-gel1-pendaftaran': 'tutorial-gel1-pendaftaran',
+            'tutorial-gel1-pembagian': 'tutorial-gel1-pembagian',
+            'tutorial-gel1-kelulusan': 'tutorial-gel1-kelulusan',
+            'tutorial-gel2-pendaftaran': 'tutorial-gel2-pendaftaran',
+            'tutorial-gel2-pembagian': 'tutorial-gel2-pembagian',
+            'tutorial-gel2-kelulusan': 'tutorial-gel2-kelulusan',
+            'tutorial-mandiri-pendaftaran': 'tutorial-mandiri-pendaftaran',
+            'tutorial-mandiri-pembagian': 'tutorial-mandiri-pembagian',
+            'admin': 'admin-dashboard',
+            'users': 'admin-users',
+            'pengumuman': 'admin-pengumuman',
+            'pretes-jadwal': 'admin-pretes-jadwal',
+        };
+        return map[pageName] || pageName;
+    },
+
+    // Load page via AJAX
+    load: function(pageId, title, pushState) {
+        var self = this;
+        if (self.isLoading) return;
+        self.isLoading = true;
+
+        var baseUrl = document.querySelector('meta[name="base-url"]')
+                        ? document.querySelector('meta[name="base-url"]').content
+                        : '';
+        var contentArea = document.querySelector('.content-area');
+
+        fetch(baseUrl + '/api/load-page.php?page=' + encodeURIComponent(pageId))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // Fade out
+                    contentArea.style.opacity = '0';
+                    contentArea.style.transition = 'opacity 0.25s ease';
+
+                    setTimeout(function() {
+                        // Update content
+                        contentArea.innerHTML = data.content;
+                        document.title = (data.title || 'LPPAI Corner') + ' - LPPAI Corner';
+
+                        // Update page title
+                        var pageTitle = document.querySelector('.page-title');
+                        if (pageTitle) pageTitle.textContent = data.title || 'LPPAI Corner';
+
+                        // Update sidebar active state
+                        self.updateActiveNav(pageId);
+
+                        // Fade in
+                        contentArea.style.opacity = '1';
+
+                        // Re-attach DataTables if present
+                        if (window.$ && window.$.fn.dataTable) {
+                            var existingTable = window.$.fn.dataTable.fnIsDataTable('table.datatable');
+                            if (existingTable) window.$(existingTable).fnDestroy();
+                            if (window.$.fn.DataTable) {
+                                window.$('table.datatable').DataTable({
+                                    pageLength: 10,
+                                    language: { url: baseUrl + '/assets/datatables-id.json' }
+                                });
+                            }
+                        }
+
+                        // Re-init alerts to toasts
+                        document.querySelectorAll('.alert').forEach(function(el) {
+                            var type = 'info';
+                            if (el.classList.contains('alert-success')) type = 'success';
+                            else if (el.classList.contains('alert-danger'))  type = 'danger';
+                            else if (el.classList.contains('alert-warning')) type = 'warning';
+                            showToast(el.innerHTML, type, 6000);
+                            el.remove();
+                        });
+
+                        // Push to History API
+                        if (pushState !== false) {
+                            var pageUrl = baseUrl + '/' + pageId + '.php';
+                            window.history.pushState({ page: pageId }, data.title, pageUrl);
+                        }
+
+                        // Close mobile menu
+                        var sidebar = document.querySelector('.sidebar');
+                        var overlay = document.querySelector('.sidebar-overlay');
+                        if (sidebar) sidebar.classList.remove('open');
+                        if (overlay) overlay.classList.remove('open');
+
+                        self.isLoading = false;
+                    }, 280);
+                } else {
+                    showToast(data.message || 'Gagal memuat halaman', 'danger');
+                    self.isLoading = false;
+                }
+            })
+            .catch(function(err) {
+                showToast('Network error: ' + err.message, 'danger');
+                self.isLoading = false;
+            });
+    },
+
+    // Update active nav link
+    updateActiveNav: function(pageId) {
+        document.querySelectorAll('.sidebar-menu a').forEach(function(link) {
+            var href = link.getAttribute('href') || '';
+            var linkPageId = href.replace(/^.*\//, '').replace(/\.php$/, '');
+            
+            if (linkPageId === pageId || href === pageId) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+};
+
+// Handle History API back/forward
+window.addEventListener('popstate', function(e) {
+    if (e.state && e.state.page) {
+        PageLoader.load(e.state.page, '', false);
+    }
+});
+
+/* =============================================
    DOM READY
    ============================================= */
 document.addEventListener('DOMContentLoaded', function() {
@@ -148,14 +288,100 @@ document.addEventListener('DOMContentLoaded', function() {
         el.remove();
     });
 
-    // Page transition: add class to re-trigger animation on load
-    var ca = document.querySelector('.content-area');
-    if (ca) {
-        ca.style.animation = 'none';
-        ca.offsetHeight; // reflow
-        ca.style.animation = '';
-    }
+    // Update active nav for current page
+    var pathname = window.location.pathname;
+    var pageName = pathname.replace(/^.*\//, '').replace(/\.php$/, '') || 'dashboard';
+    PageLoader.updateActiveNav(pageName);
+
+    // Initialize History API state
+    var currentPageId = PageLoader.getPageFromUrl(pathname);
+    window.history.replaceState({ page: currentPageId }, '', pathname);
 });
+
+/* =============================================
+   EVENT DELEGATION — AJAX Navigation
+   ============================================= */
+// Intercept .page-nav links for AJAX navigation
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('.page-nav');
+    if (!link) return;
+
+    var href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('javascript')) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var pageId = href.replace(/^.*\//, '').replace(/\.php$/, '') || 'dashboard';
+    var title = link.textContent || 'LPPAI Corner';
+
+    PageLoader.load(pageId, title);
+}, true);
+
+// Intercept form submissions for AJAX (for filters, status changes, etc.)
+document.addEventListener('submit', function(e) {
+    var form = e.target;
+    if (form.classList.contains('page-form')) {
+        e.preventDefault();
+
+        var baseUrl = document.querySelector('meta[name="base-url"]')
+                        ? document.querySelector('meta[name="base-url"]').content
+                        : '';
+        var formData = new FormData(form);
+        var formAction = form.getAttribute('action') || window.location.pathname;
+
+        fetch(formAction, {
+            method: form.getAttribute('method') || 'POST',
+            body: formData
+        })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+            // Extract content from response
+            var temp = document.createElement('div');
+            temp.innerHTML = html;
+            
+            // Find content-area div in response
+            var contentDiv = temp.querySelector('.content-area');
+            if (contentDiv) {
+                var contentArea = document.querySelector('.content-area');
+                contentArea.style.opacity = '0';
+                contentArea.style.transition = 'opacity 0.25s ease';
+
+                setTimeout(function() {
+                    contentArea.innerHTML = contentDiv.innerHTML;
+                    contentArea.style.opacity = '1';
+
+                    // Re-init alerts
+                    document.querySelectorAll('.alert').forEach(function(el) {
+                        var type = 'info';
+                        if (el.classList.contains('alert-success')) type = 'success';
+                        else if (el.classList.contains('alert-danger'))  type = 'danger';
+                        else if (el.classList.contains('alert-warning')) type = 'warning';
+                        showToast(el.innerHTML, type, 6000);
+                        el.remove();
+                    });
+
+                    // Re-attach DataTables
+                    if (window.$ && window.$.fn.dataTable) {
+                        var existingTable = window.$.fn.dataTable.fnIsDataTable('table.datatable');
+                        if (existingTable) window.$(existingTable).fnDestroy();
+                        if (window.$.fn.DataTable) {
+                            window.$('table.datatable').DataTable({
+                                pageLength: 10
+                            });
+                        }
+                    }
+                }, 280);
+            } else {
+                // Fallback: full reload if content div not found
+                window.location.reload();
+            }
+        })
+        .catch(function(err) {
+            showToast('Network error: ' + err.message, 'danger');
+        });
+    }
+}, false);
 
 /* =============================================
    EVENT DELEGATION — data-confirm + AJAX delete
