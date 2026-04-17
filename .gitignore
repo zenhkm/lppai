@@ -1,5 +1,6 @@
 # Environment & Config
-config/database.php
+.env
+.env.*
 
 # OS files
 Thumbs.db
