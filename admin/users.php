@@ -88,24 +88,24 @@ include __DIR__ . '/../includes/header.php';
 
 <!-- Import & Download Template -->
 <div class="card">
-    <div class="card-header">📥 Import Pengguna dari Excel/CSV</div>
+    <div class="card-header">📥 Import Pengguna dari Excel</div>
     <div class="card-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
         <a href="<?= BASE_URL ?>/api/download-template.php" class="btn btn-primary" style="width:auto;">
-            📄 Download Template CSV
+            📄 Download Template Excel
         </a>
         <button type="button" class="btn btn-primary" style="width:auto;background:#2d7a4a;" onclick="document.getElementById('modal-import').style.display='flex'">
-            📤 Import dari CSV
+            📤 Import dari Excel
         </button>
-        <small style="color:#888;">Download template, isi data di Excel, lalu upload file CSV-nya.</small>
+        <small style="color:#888;">Download template .xlsx, isi data, lalu upload kembali.</small>
     </div>
 </div>
 
 <!-- Modal Import -->
 <div id="modal-import" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
-        <h3 style="margin-bottom:16px;">📤 Import Pengguna dari CSV</h3>
+        <h3 style="margin-bottom:16px;">📤 Import Pengguna dari Excel</h3>
         <p style="margin-bottom:16px;color:#666;font-size:14px;">
-            Upload file CSV sesuai template. Kolom wajib: <strong>nim, nama_lengkap, tanggal_lahir</strong>.<br>
+            Upload file Excel (.xlsx) sesuai template. Kolom wajib: <strong>nim, nama_lengkap, tanggal_lahir</strong>.<br>
             Username otomatis = NIM. Password otomatis = tanggal lahir format <strong>ddmmyyyy</strong>.<br>
             NIM yang sudah terdaftar akan dilewati.
         </p>
@@ -113,7 +113,7 @@ include __DIR__ . '/../includes/header.php';
             <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
             <div class="form-group">
                 <label>Pilih File CSV</label>
-                <input type="file" name="csv_file" id="csv_file" accept=".csv,.txt" required
+                <input type="file" name="csv_file" id="csv_file" accept=".xlsx,.xls" required
                     style="padding:10px;border:2px dashed #ccc;border-radius:10px;width:100%;cursor:pointer;">
             </div>
             <div id="import-result" style="display:none;margin-bottom:16px;padding:12px;border-radius:10px;font-size:14px;"></div>

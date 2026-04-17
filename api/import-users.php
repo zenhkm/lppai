@@ -1,6 +1,6 @@
 <?php
 /**
- * LPPAI Corner - Import Users dari CSV
+ * LPPAI Corner - Import Users dari Excel
  */
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
@@ -27,7 +27,134 @@ $file = $_FILES['csv_file'];
 
 // Validasi ekstensi
 $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-if (!in_array($ext, ['csv', 'txt'])) {
+if (!in_array($ext, ['xlsx', 'xls'])) {
+    echo json_encode(['success' => false, 'message' => 'File harus berformat Excel (.xlsx atau .xls).']);
+    exit;
+}
+
+// Validasi ukuran maksimal 5MB
+if ($file['size'] > 5 * 1024 * 1024) {
+    echo json_encode(['success' => false, 'message' => 'Ukuran file maksimal 5MB.']);
+    exit;
+}
+
+require_once '/public_html/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
+try {
+    $spreadsheet = IOFactory::load($file['tmp_name']);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Gagal membaca file Excel: ' . $e->getMessage()]);
+    exit;
+}
+
+$sheet = $spreadsheet->getActiveSheet();
+$rows = $sheet->toArray(null, true, true, false);
+
+if (empty($rows)) {
+    echo json_encode(['success' => false, 'message' => 'File Excel kosong.']);
+    exit;
+}
+
+// Baris pertama = header, normalize
+$headerRow = array_map(fn($h) => strtolower(trim(str_replace([' (ddmmyyyy)', ' (mahasiswa/admin)', 'no. '], ['', '', 'no_'], (string)$h))), $rows[0]);
+// Mapping lebih fleksibel
+$colMap = [];
+foreach ($headerRow as $idx => $h) {
+    if (str_contains($h, 'nim')) $colMap['nim'] = $idx;
+    elseif (str_contains($h, 'nama')) $colMap['nama_lengkap'] = $idx;
+    elseif (str_contains($h, 'tanggal') || str_contains($h, 'lahir') || str_contains($h, 'tgl')) $colMap['tanggal_lahir'] = $idx;
+    elseif (str_contains($h, 'email')) $colMap['email'] = $idx;
+    elseif (str_contains($h, 'hp') || str_contains($h, 'phone') || str_contains($h, 'telp')) $colMap['no_hp'] = $idx;
+    elseif (str_contains($h, 'prodi') || str_contains($h, 'program') || str_contains($h, 'studi')) $colMap['program_studi'] = $idx;
+    elseif (str_contains($h, 'role') || str_contains($h, 'peran')) $colMap['role'] = $idx;
+}
+
+$required = ['nim', 'nama_lengkap', 'tanggal_lahir'];
+$missing = array_diff($required, array_keys($colMap));
+if (!empty($missing)) {
+    echo json_encode(['success' => false, 'message' => 'Kolom wajib tidak ditemukan: ' . implode(', ', $missing) . '. Pastikan menggunakan template yang benar.']);
+    exit;
+}
+
+$pdo = getDBConnection();
+$imported = 0;
+$skipped = 0;
+$errors = [];
+
+foreach (array_slice($rows, 1) as $rowNum => $row) {
+    $dataRow = $rowNum + 2; // row number in Excel (1-based + header)
+
+    $nim = trim((string)($row[$colMap['nim']] ?? ''));
+    $nama = trim((string)($row[$colMap['nama_lengkap']] ?? ''));
+    $tglRaw = trim((string)($row[$colMap['tanggal_lahir']] ?? ''));
+    $email = trim((string)($row[$colMap['email'] ?? -1] ?? ''));
+    $noHp = trim((string)($row[$colMap['no_hp'] ?? -1] ?? ''));
+    $prodi = trim((string)($row[$colMap['program_studi'] ?? -1] ?? ''));
+    $roleVal = strtolower(trim((string)($row[$colMap['role'] ?? -1] ?? '')));
+    $role = in_array($roleVal, ['admin', 'mahasiswa']) ? $roleVal : 'mahasiswa';
+
+    // Skip baris kosong
+    if (empty($nim) && empty($nama)) continue;
+
+    // Validasi wajib
+    if (empty($nim) || empty($nama) || empty($tglRaw)) {
+        $errors[] = "Baris $dataRow: nim, nama_lengkap, tanggal_lahir wajib diisi.";
+        $skipped++;
+        continue;
+    }
+
+    // Parse tanggal lahir - berbagai format
+    $dt = false;
+    // Jika angka (Excel serial date)
+    if (is_numeric($tglRaw) && strlen($tglRaw) != 8) {
+        // Excel date serial
+        $dt = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$tglRaw);
+    } else {
+        foreach (['dmY', 'd/m/Y', 'd-m-Y', 'Y-m-d', 'd/m/y', 'd-m-y', 'dmy'] as $fmt) {
+            $dt = DateTime::createFromFormat($fmt, $tglRaw);
+            if ($dt) break;
+        }
+    }
+
+    if (!$dt) {
+        $errors[] = "Baris $dataRow: format tanggal_lahir '$tglRaw' tidak dikenali (gunakan ddmmyyyy, contoh: 01031990).";
+        $skipped++;
+        continue;
+    }
+
+    $tglLahirDB = $dt->format('Y-m-d');
+    $passwordRaw = $dt->format('dmY'); // ddmmyyyy
+    $username = $nim;
+
+    // Cek duplikat
+    $check = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+    $check->execute([$username]);
+    if ($check->fetch()) {
+        $errors[] = "Baris $dataRow: NIM '$nim' sudah terdaftar, dilewati.";
+        $skipped++;
+        continue;
+    }
+
+    // Insert
+    $hash = password_hash($passwordRaw, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, tanggal_lahir, role) VALUES (?,?,?,?,?,?,?,?,?)");
+    $stmt->execute([$username, $hash, $nama, $nim, $email, $noHp, $prodi, $tglLahirDB, $role]);
+    $imported++;
+}
+
+$message = "$imported pengguna berhasil diimport.";
+if ($skipped > 0) $message .= " $skipped baris dilewati.";
+
+echo json_encode([
+    'success' => true,
+    'message' => $message,
+    'imported' => $imported,
+    'skipped' => $skipped,
+    'errors' => $errors,
+]);
+exit;
     echo json_encode(['success' => false, 'message' => 'File harus berformat CSV.']);
     exit;
 }

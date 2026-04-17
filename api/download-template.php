@@ -1,25 +1,95 @@
 <?php
 /**
- * LPPAI Corner - Download Template Import User (CSV)
+ * LPPAI Corner - Download Template Import User (Excel)
  */
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
-header('Content-Type: text/csv; charset=UTF-8');
-header('Content-Disposition: attachment; filename="template_import_users.csv"');
+require_once '/public_html/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+
+$spreadsheet = new Spreadsheet();
+$sheet = $spreadsheet->getActiveSheet();
+$sheet->setTitle('Import Pengguna');
+
+// === HEADER ROW ===
+$headers = ['NIM', 'Nama Lengkap', 'Tanggal Lahir (ddmmyyyy)', 'Email', 'No. HP', 'Program Studi', 'Role (mahasiswa/admin)'];
+foreach ($headers as $col => $title) {
+    $cell = chr(65 + $col) . '1';
+    $sheet->setCellValue($cell, $title);
+}
+
+// Style header
+$sheet->getStyle('A1:G1')->applyFromArray([
+    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1a5632']],
+    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+]);
+
+// === CONTOH DATA ===
+$sheet->setCellValue('A2', '2024010006');
+$sheet->setCellValue('B2', 'Contoh Mahasiswa');
+$sheet->setCellValue('C2', '01031990');
+$sheet->setCellValue('D2', 'contoh@mail.com');
+$sheet->setCellValue('E2', '081234567895');
+$sheet->setCellValue('F2', 'Teknik Informatika');
+$sheet->setCellValue('G2', 'mahasiswa');
+
+$sheet->setCellValue('A3', '2024010007');
+$sheet->setCellValue('B3', 'Contoh Kedua');
+$sheet->setCellValue('C3', '15051995');
+$sheet->setCellValue('D3', 'contoh2@mail.com');
+$sheet->setCellValue('E3', '081234567896');
+$sheet->setCellValue('F3', 'Manajemen');
+$sheet->setCellValue('G3', 'mahasiswa');
+
+// Style data rows
+$sheet->getStyle('A2:G3')->applyFromArray([
+    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+]);
+$sheet->getStyle('A2:G3')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('f0fff4');
+
+// Auto width kolom
+foreach (range('A', 'G') as $col) {
+    $sheet->getColumnDimension($col)->setAutoSize(true);
+}
+
+// === SHEET PETUNJUK ===
+$info = $spreadsheet->createSheet();
+$info->setTitle('Petunjuk');
+$info->setCellValue('A1', 'PETUNJUK PENGISIAN');
+$info->setCellValue('A3', 'Kolom');
+$info->setCellValue('B3', 'Keterangan');
+$petunjuk = [
+    ['NIM', 'Nomor Induk Mahasiswa - wajib diisi, akan digunakan sebagai username login'],
+    ['Nama Lengkap', 'Nama lengkap mahasiswa - wajib diisi'],
+    ['Tanggal Lahir (ddmmyyyy)', 'Format: ddmmyyyy, contoh: 01031990 untuk 1 Maret 1990 - wajib diisi, digunakan sebagai password'],
+    ['Email', 'Alamat email (opsional)'],
+    ['No. HP', 'Nomor handphone (opsional)'],
+    ['Program Studi', 'Program studi mahasiswa (opsional)'],
+    ['Role', 'Isi: mahasiswa atau admin (default: mahasiswa)'],
+];
+foreach ($petunjuk as $i => $row) {
+    $info->setCellValue('A' . ($i + 4), $row[0]);
+    $info->setCellValue('B' . ($i + 4), $row[1]);
+}
+$info->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+$info->getStyle('A3:B3')->getFont()->setBold(true);
+$info->getColumnDimension('A')->setWidth(35);
+$info->getColumnDimension('B')->setWidth(70);
+
+$spreadsheet->setActiveSheetIndex(0);
+
+header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+header('Content-Disposition: attachment; filename="template_import_pengguna.xlsx"');
 header('Cache-Control: no-cache');
 
-// BOM UTF-8 agar Excel bisa baca karakter Indonesia
-echo "\xEF\xBB\xBF";
-
-$out = fopen('php://output', 'w');
-
-// Header row
-fputcsv($out, ['nim', 'nama_lengkap', 'tanggal_lahir', 'email', 'no_hp', 'program_studi', 'role']);
-
-// Contoh data (tanggal_lahir format ddmmyyyy atau yyyy-mm-dd)
-fputcsv($out, ['2024010006', 'Contoh Mahasiswa', '01031990', 'contoh@mail.com', '081234567895', 'Teknik Informatika', 'mahasiswa']);
-fputcsv($out, ['2024010007', 'Contoh Kedua', '15051995', 'contoh2@mail.com', '081234567896', 'Manajemen', 'mahasiswa']);
-
-fclose($out);
+$writer = new Xlsx($spreadsheet);
+$writer->save('php://output');
 exit;
