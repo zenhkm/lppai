@@ -1,0 +1,34 @@
+# Environment & Config
+config/database.php
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+nbproject/
+
+# Dependencies
+vendor/
+node_modules/
+composer.lock
+package-lock.json
+
+# Logs
+*.log
+error_log
+
+# Cache
+*.cache
+
+# Uploads (if any)
+uploads/
+
+# Environment variables
+.env
+.env.*
