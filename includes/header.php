@@ -11,7 +11,7 @@ $currentUser = getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= sanitize(PAGE_TITLE) ?> - <?= APP_NAME ?></title>
-    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/assets/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/assets/favicon.svg">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
 </head>
 <body>
