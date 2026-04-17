@@ -3,6 +3,7 @@
  * LPPAI Corner - Header Include
  */
 if (!defined('PAGE_TITLE')) define('PAGE_TITLE', 'LPPAI Corner');
+if (!defined('EXTRA_HEAD')) define('EXTRA_HEAD', '');
 $currentUser = getCurrentUser();
 ?>
 <!DOCTYPE html>
@@ -14,9 +15,10 @@ $currentUser = getCurrentUser();
     <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/assets/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
     <meta name="base-url" content="<?= BASE_URL ?>">
-    <?php if (defined('EXTRA_HEAD')) echo EXTRA_HEAD; ?>
+    <?= EXTRA_HEAD ?>
 </head>
 <body>
 <div class="app-wrapper">
