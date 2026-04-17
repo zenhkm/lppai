@@ -8,10 +8,13 @@ ini_set('error_log', __DIR__ . '/../logs/error.log');
 error_reporting(E_ALL);
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
+use PhpOffice\PhpSpreadsheet\Reader\Xls as XlsReader;
 
 header('Content-Type: application/json');
 
 try {
+set_time_limit(120);
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
@@ -68,7 +71,13 @@ if (!$autoloaded) {
 
 
 try {
-    $spreadsheet = IOFactory::load($file['tmp_name']);
+    if ($ext === 'xlsx') {
+        $reader = new XlsxReader();
+    } else {
+        $reader = new XlsReader();
+    }
+    $reader->setReadDataOnly(true);
+    $spreadsheet = $reader->load($file['tmp_name']);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Gagal membaca file Excel: ' . $e->getMessage()]);
     exit;
@@ -162,8 +171,8 @@ foreach (array_slice($rows, 1) as $rowNum => $row) {
         continue;
     }
 
-    // Insert
-    $hash = password_hash($passwordRaw, PASSWORD_DEFAULT);
+    // Insert (cost 8 agar lebih cepat saat import bulk)
+    $hash = password_hash($passwordRaw, PASSWORD_BCRYPT, ['cost' => 8]);
     $stmt = $pdo->prepare("INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, tanggal_lahir, role) VALUES (?,?,?,?,?,?,?,?,?)");
     $stmt->execute([$username, $hash, $nama, $nim, $email, $noHp, $prodi, $tglLahirDB, $role]);
     $imported++;
