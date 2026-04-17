@@ -110,15 +110,15 @@ CREATE TABLE tutorial_registrations (
 -- Admin account (username: umami, password: 123)
 -- Password di-hash dengan password_hash() PHP, ini hash dari '123'
 INSERT INTO users (username, password, nama_lengkap, role) VALUES
-('umami', '$2y$10$YourHashHere', 'Admin LPPAI', 'admin');
+('umami', '$2y$10$.ub4SeMVyiGNCwET1zTinOaZ6Xlibi/E0AuyMOiQkX1biQ4xqu5nm', 'Admin LPPAI', 'admin');
 
 -- Mahasiswa dummy
 INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, fakultas, role) VALUES
-('mhs001', '$2y$10$YourHashHere', 'Ahmad Fauzi', '2024010001', 'ahmad@mail.com', '081234567890', 'Teknik Informatika', 'Fakultas Teknik', 'mahasiswa'),
-('mhs002', '$2y$10$YourHashHere', 'Siti Nurhaliza', '2024010002', 'siti@mail.com', '081234567891', 'Sistem Informasi', 'Fakultas Teknik', 'mahasiswa'),
-('mhs003', '$2y$10$YourHashHere', 'Budi Santoso', '2024010003', 'budi@mail.com', '081234567892', 'Manajemen', 'Fakultas Ekonomi', 'mahasiswa'),
-('mhs004', '$2y$10$YourHashHere', 'Dewi Lestari', '2024010004', 'dewi@mail.com', '081234567893', 'Akuntansi', 'Fakultas Ekonomi', 'mahasiswa'),
-('mhs005', '$2y$10$YourHashHere', 'Rizki Pratama', '2024010005', 'rizki@mail.com', '081234567894', 'Hukum', 'Fakultas Hukum', 'mahasiswa');
+('mhs001', '$2y$10$.ub4SeMVyiGNCwET1zTinOaZ6Xlibi/E0AuyMOiQkX1biQ4xqu5nm', 'Ahmad Fauzi', '2024010001', 'ahmad@mail.com', '081234567890', 'Teknik Informatika', 'Fakultas Teknik', 'mahasiswa'),
+('mhs002', '$2y$10$.ub4SeMVyiGNCwET1zTinOaZ6Xlibi/E0AuyMOiQkX1biQ4xqu5nm', 'Siti Nurhaliza', '2024010002', 'siti@mail.com', '081234567891', 'Sistem Informasi', 'Fakultas Teknik', 'mahasiswa'),
+('mhs003', '$2y$10$.ub4SeMVyiGNCwET1zTinOaZ6Xlibi/E0AuyMOiQkX1biQ4xqu5nm', 'Budi Santoso', '2024010003', 'budi@mail.com', '081234567892', 'Manajemen', 'Fakultas Ekonomi', 'mahasiswa'),
+('mhs004', '$2y$10$.ub4SeMVyiGNCwET1zTinOaZ6Xlibi/E0AuyMOiQkX1biQ4xqu5nm', 'Dewi Lestari', '2024010004', 'dewi@mail.com', '081234567893', 'Akuntansi', 'Fakultas Ekonomi', 'mahasiswa'),
+('mhs005', '$2y$10$.ub4SeMVyiGNCwET1zTinOaZ6Xlibi/E0AuyMOiQkX1biQ4xqu5nm', 'Rizki Pratama', '2024010005', 'rizki@mail.com', '081234567894', 'Hukum', 'Fakultas Hukum', 'mahasiswa');
 
 -- Jadwal Pretes dummy
 INSERT INTO pretes_schedules (periode, tanggal, waktu_mulai, waktu_selesai, ruangan, kuota, terisi) VALUES
