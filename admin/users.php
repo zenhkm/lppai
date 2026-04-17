@@ -144,9 +144,18 @@ document.getElementById('form-import').addEventListener('submit', function(e) {
         method: 'POST',
         body: formData
     })
-    .then(r => r.json())
-    .then(data => {
+    .then(r => r.text())
+    .then(text => {
         result.style.display = 'block';
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch(e) {
+            result.style.background = '#f8d7da';
+            result.style.color = '#721c24';
+            result.innerHTML = '<strong>❌ Server Error (bukan JSON):</strong><br><pre style="font-size:11px;white-space:pre-wrap;margin-top:8px;">' + text.substring(0, 1000) + '</pre>';
+            return;
+        }
         if (data.success) {
             result.style.background = '#d4edda';
             result.style.color = '#155724';
@@ -166,11 +175,11 @@ document.getElementById('form-import').addEventListener('submit', function(e) {
             result.innerHTML = '<strong>❌ ' + data.message + '</strong>';
         }
     })
-    .catch(() => {
+    .catch(err => {
         result.style.display = 'block';
         result.style.background = '#f8d7da';
         result.style.color = '#721c24';
-        result.innerHTML = '<strong>❌ Terjadi kesalahan saat upload.</strong>';
+        result.innerHTML = '<strong>❌ Network error: ' + err.message + '</strong>';
     })
     .finally(() => {
         btn.disabled = false;
