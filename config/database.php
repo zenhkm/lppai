@@ -10,7 +10,7 @@ define('DB_PASS', '03Maret1990');
 define('DB_CHARSET', 'utf8mb4');
 
 // Base URL (sesuaikan dengan server Anda)
-define('BASE_URL', 'http://localhost/lppai-corner/web');
+define('BASE_URL', 'https://lppai.quizb.my.id/web');
 define('APP_NAME', 'LPPAI Corner');
 
 function getDBConnection() {
