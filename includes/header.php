@@ -13,6 +13,7 @@ $currentUser = getCurrentUser();
     <title><?= sanitize(PAGE_TITLE) ?> - <?= APP_NAME ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/assets/favicon.svg">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+    <?php if (defined('EXTRA_HEAD')) echo EXTRA_HEAD; ?>
 </head>
 <body>
 <div class="app-wrapper">

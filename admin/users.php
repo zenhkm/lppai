@@ -3,6 +3,13 @@
  * LPPAI Corner - Admin: Kelola Users
  */
 define('PAGE_TITLE', 'Kelola Pengguna');
+define('EXTRA_HEAD', '
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+<style>
+.dataTables_wrapper .dataTables_filter input{border:2px solid #e0e0e0;border-radius:8px;padding:6px 12px;}
+.dataTables_wrapper .dataTables_length select{border:2px solid #e0e0e0;border-radius:8px;padding:4px 8px;}
+</style>
+');
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
@@ -245,10 +252,10 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
 
 <!-- User List -->
 <div class="card">
-    <div class="card-header">📋 Daftar Pengguna (<?= count($users) ?>)</div>
+    <div class="card-header">📋 Daftar Pengguna</div>
     <div class="card-body">
         <div class="table-responsive">
-            <table>
+            <table id="table-users" class="display" style="width:100%">
                 <thead>
                     <tr>
                         <th>No</th>
@@ -296,5 +303,31 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#table-users').DataTable({
+        language: {
+            search:         'Cari:',
+            lengthMenu:     'Tampilkan _MENU_ data',
+            info:           'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+            infoEmpty:      'Tidak ada data',
+            infoFiltered:   '(difilter dari _MAX_ total data)',
+            zeroRecords:    'Data tidak ditemukan',
+            paginate: {
+                first:    'Pertama',
+                last:     'Terakhir',
+                next:     'Selanjutnya',
+                previous: 'Sebelumnya'
+            }
+        },
+        pageLength: 25,
+        order: [],
+        columnDefs: [{ orderable: false, targets: 6 }]
+    });
+});
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
