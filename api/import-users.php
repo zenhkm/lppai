@@ -98,19 +98,19 @@ while (($line = fgetcsv($handle, 1000)) !== false) {
         continue;
     }
 
-    // Parse tanggal_lahir (ddmmyy atau dd/mm/yy atau dd-mm-yy atau yyyy-mm-dd)
+    // Parse tanggal_lahir (ddmmyyyy atau dd/mm/yyyy atau dd-mm-yyyy atau yyyy-mm-dd)
     $dt = false;
     foreach (['d/m/y', 'd-m-y', 'dmy', 'Y-m-d', 'd/m/Y', 'd-m-Y'] as $fmt) {
         $dt = DateTime::createFromFormat($fmt, $tglLahir);
         if ($dt) break;
     }
     if (!$dt) {
-        $errors[] = "Baris $row: format tanggal_lahir '$tglLahir' tidak dikenali (gunakan ddmmyy atau yyyy-mm-dd).";
+        $errors[] = "Baris $row: format tanggal_lahir '$tglLahir' tidak dikenali (gunakan ddmmyyyy atau yyyy-mm-dd).";
         $skipped++;
         continue;
     }
     $tglLahirDB = $dt->format('Y-m-d');
-    $passwordRaw = $dt->format('dmy'); // ddmmyy
+    $passwordRaw = $dt->format('dmY'); // ddmmyyyy
 
     // Cek duplikat NIM/username
     $check = $pdo->prepare("SELECT id FROM users WHERE username = ?");

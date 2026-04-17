@@ -40,11 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $msgType = 'danger';
                 } else {
                     $dt = DateTime::createFromFormat('Y-m-d', $tglLahir);
-                    $passwordRaw = $dt ? $dt->format('dmy') : str_replace('-', '', $tglLahir);
+                    $passwordRaw = $dt ? $dt->format('dmY') : str_replace('-', '', $tglLahir);
                     $hash = password_hash($passwordRaw, PASSWORD_DEFAULT);
                     $stmt = $pdo->prepare("INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, tanggal_lahir, role) VALUES (?,?,?,?,?,?,?,?,?)");
                     $stmt->execute([$username, $hash, $nama, $nim, $email, $noHp, $prodi, $tglLahir, $role]);
-                    $message = "User berhasil ditambahkan! Login: Username=<strong>$nim</strong>, Password=<strong>$passwordRaw</strong>";
+                    $message = "User berhasil ditambahkan! Login: Username=<strong>$nim</strong>, Password=<strong>$passwordRaw</strong> (ddmmyyyy)";
                     $msgType = 'success';
                 }
             }
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
             $newPass = password_hash($passwordRaw, PASSWORD_DEFAULT);
             $pdo->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$newPass, $id]);
-            $message = 'Password berhasil direset ke tanggal lahir (ddmmyy): <strong>' . sanitize($passwordRaw) . '</strong>.';
+            $message = 'Password berhasil direset ke tanggal lahir (ddmmyyyy): <strong>' . sanitize($passwordRaw) . '</strong>.';
             $msgType = 'success';
         }
     }
@@ -106,7 +106,7 @@ include __DIR__ . '/../includes/header.php';
         <h3 style="margin-bottom:16px;">📤 Import Pengguna dari CSV</h3>
         <p style="margin-bottom:16px;color:#666;font-size:14px;">
             Upload file CSV sesuai template. Kolom wajib: <strong>nim, nama_lengkap, tanggal_lahir</strong>.<br>
-            Username otomatis = NIM. Password otomatis = tanggal lahir format <strong>ddmmyy</strong>.<br>
+            Username otomatis = NIM. Password otomatis = tanggal lahir format <strong>ddmmyyyy</strong>.<br>
             NIM yang sudah terdaftar akan dilewati.
         </p>
         <form id="form-import">
@@ -193,7 +193,7 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
             <input type="hidden" name="action" value="create">
 
             <div style="margin-bottom:12px;padding:12px;background:#e8f5e9;border-radius:10px;font-size:13px;color:#155724;">
-                ℹ️ <strong>Username otomatis = NIM</strong>, <strong>Password otomatis = tanggal lahir format ddmmyy</strong> (contoh: 01031990)
+                ℹ️ <strong>Username otomatis = NIM</strong>, <strong>Password otomatis = tanggal lahir format ddmmyyyy</strong> (contoh: 01031990)
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
                 <div class="form-group">
@@ -269,7 +269,7 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
                                 <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
                                 <input type="hidden" name="action" value="reset_password">
                                 <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-warning" data-confirm="Reset password ke tanggal lahir (ddmmyy)?">Reset Pass</button>
+                                <button type="submit" class="btn btn-sm btn-warning" data-confirm="Reset password ke tanggal lahir (ddmmyyyy)?">Reset Pass</button>
                             </form>
                             <?php if ($u['id'] !== $_SESSION['user_id']): ?>
                             <form method="POST" style="display:inline;">
