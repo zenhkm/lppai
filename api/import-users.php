@@ -57,7 +57,7 @@ $skipped = 0;
 $errors = [];
 $row = 0;
 
-$expectedColumns = ['username', 'password', 'nama_lengkap', 'nim', 'email', 'no_hp', 'program_studi', 'fakultas', 'role'];
+$expectedColumns = ['nim', 'nama_lengkap', 'tanggal_lahir', 'email', 'no_hp', 'program_studi', 'role'];
 
 while (($line = fgetcsv($handle, 1000)) !== false) {
     $row++;
@@ -82,36 +82,49 @@ while (($line = fgetcsv($handle, 1000)) !== false) {
     // Map ke kolom
     $data = array_combine($header, array_pad($line, count($header), ''));
 
-    $username = trim($data['username'] ?? '');
-    $password = trim($data['password'] ?? '');
-    $nama = trim($data['nama_lengkap'] ?? '');
     $nim = trim($data['nim'] ?? '');
+    $nama = trim($data['nama_lengkap'] ?? '');
+    $tglLahir = trim($data['tanggal_lahir'] ?? '');
     $email = trim($data['email'] ?? '');
     $noHp = trim($data['no_hp'] ?? '');
     $prodi = trim($data['program_studi'] ?? '');
-    $fakultas = trim($data['fakultas'] ?? '');
     $role = in_array(trim($data['role'] ?? ''), ['admin', 'mahasiswa']) ? trim($data['role']) : 'mahasiswa';
+    $username = $nim; // username = NIM
 
     // Validasi wajib
-    if (empty($username) || empty($password) || empty($nama)) {
-        $errors[] = "Baris $row: username, password, nama_lengkap wajib diisi.";
+    if (empty($nim) || empty($nama) || empty($tglLahir)) {
+        $errors[] = "Baris $row: nim, nama_lengkap, tanggal_lahir wajib diisi.";
         $skipped++;
         continue;
     }
 
-    // Cek duplikat username
+    // Parse tanggal_lahir (ddmmyy atau dd/mm/yy atau dd-mm-yy atau yyyy-mm-dd)
+    $dt = false;
+    foreach (['d/m/y', 'd-m-y', 'dmy', 'Y-m-d', 'd/m/Y', 'd-m-Y'] as $fmt) {
+        $dt = DateTime::createFromFormat($fmt, $tglLahir);
+        if ($dt) break;
+    }
+    if (!$dt) {
+        $errors[] = "Baris $row: format tanggal_lahir '$tglLahir' tidak dikenali (gunakan ddmmyy atau yyyy-mm-dd).";
+        $skipped++;
+        continue;
+    }
+    $tglLahirDB = $dt->format('Y-m-d');
+    $passwordRaw = $dt->format('dmy'); // ddmmyy
+
+    // Cek duplikat NIM/username
     $check = $pdo->prepare("SELECT id FROM users WHERE username = ?");
     $check->execute([$username]);
     if ($check->fetch()) {
-        $errors[] = "Baris $row: username '$username' sudah digunakan, dilewati.";
+        $errors[] = "Baris $row: NIM '$nim' sudah terdaftar, dilewati.";
         $skipped++;
         continue;
     }
 
     // Insert
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, fakultas, role) VALUES (?,?,?,?,?,?,?,?,?)");
-    $stmt->execute([$username, $hash, $nama, $nim, $email, $noHp, $prodi, $fakultas, $role]);
+    $hash = password_hash($passwordRaw, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, tanggal_lahir, role) VALUES (?,?,?,?,?,?,?,?,?)");
+    $stmt->execute([$username, $hash, $nama, $nim, $email, $noHp, $prodi, $tglLahirDB, $role]);
     $imported++;
 }
 

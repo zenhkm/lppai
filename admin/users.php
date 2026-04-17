@@ -20,30 +20,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $action = $_POST['action'];
 
         if ($action === 'create') {
-            $username = trim($_POST['username'] ?? '');
-            $password = $_POST['password'] ?? '';
             $nama = trim($_POST['nama_lengkap'] ?? '');
             $nim = trim($_POST['nim'] ?? '');
+            $tglLahir = trim($_POST['tanggal_lahir'] ?? '');
             $email = trim($_POST['email'] ?? '');
             $noHp = trim($_POST['no_hp'] ?? '');
             $prodi = trim($_POST['program_studi'] ?? '');
-            $fakultas = trim($_POST['fakultas'] ?? '');
             $role = $_POST['role'] ?? 'mahasiswa';
 
-            if (empty($username) || empty($password) || empty($nama)) {
-                $message = 'Username, password, dan nama harus diisi.';
+            if (empty($nim) || empty($nama) || empty($tglLahir)) {
+                $message = 'NIM, nama lengkap, dan tanggal lahir harus diisi.';
                 $msgType = 'danger';
             } else {
+                $username = $nim; // username otomatis = NIM
                 $check = $pdo->prepare("SELECT id FROM users WHERE username = ?");
                 $check->execute([$username]);
                 if ($check->fetch()) {
-                    $message = 'Username sudah digunakan.';
+                    $message = 'NIM sudah terdaftar.';
                     $msgType = 'danger';
                 } else {
-                    $hash = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $pdo->prepare("INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, fakultas, role) VALUES (?,?,?,?,?,?,?,?,?)");
-                    $stmt->execute([$username, $hash, $nama, $nim, $email, $noHp, $prodi, $fakultas, $role]);
-                    $message = 'User berhasil ditambahkan!';
+                    $dt = DateTime::createFromFormat('Y-m-d', $tglLahir);
+                    $passwordRaw = $dt ? $dt->format('dmy') : str_replace('-', '', $tglLahir);
+                    $hash = password_hash($passwordRaw, PASSWORD_DEFAULT);
+                    $stmt = $pdo->prepare("INSERT INTO users (username, password, nama_lengkap, nim, email, no_hp, program_studi, tanggal_lahir, role) VALUES (?,?,?,?,?,?,?,?,?)");
+                    $stmt->execute([$username, $hash, $nama, $nim, $email, $noHp, $prodi, $tglLahir, $role]);
+                    $message = "User berhasil ditambahkan! Login: Username=<strong>$nim</strong>, Password=<strong>$passwordRaw</strong>";
                     $msgType = 'success';
                 }
             }
@@ -59,9 +60,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         } elseif ($action === 'reset_password') {
             $id = (int)($_POST['id'] ?? 0);
-            $newPass = password_hash('123', PASSWORD_DEFAULT);
+            $userRow = $pdo->prepare("SELECT tanggal_lahir FROM users WHERE id = ?");
+            $userRow->execute([$id]);
+            $userData = $userRow->fetch();
+            if ($userData && !empty($userData['tanggal_lahir'])) {
+                $dt = new DateTime($userData['tanggal_lahir']);
+                $passwordRaw = $dt->format('dmy');
+            } else {
+                $passwordRaw = '123456';
+            }
+            $newPass = password_hash($passwordRaw, PASSWORD_DEFAULT);
             $pdo->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$newPass, $id]);
-            $message = 'Password berhasil direset ke "123".';
+            $message = 'Password berhasil direset ke tanggal lahir (ddmmyy): <strong>' . sanitize($passwordRaw) . '</strong>.';
             $msgType = 'success';
         }
     }
@@ -95,8 +105,9 @@ include __DIR__ . '/../includes/header.php';
     <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
         <h3 style="margin-bottom:16px;">📤 Import Pengguna dari CSV</h3>
         <p style="margin-bottom:16px;color:#666;font-size:14px;">
-            Upload file CSV sesuai template. Kolom wajib: <strong>username, password, nama_lengkap</strong>.
-            Username yang sudah ada akan dilewati.
+            Upload file CSV sesuai template. Kolom wajib: <strong>nim, nama_lengkap, tanggal_lahir</strong>.<br>
+            Username otomatis = NIM. Password otomatis = tanggal lahir format <strong>ddmmyy</strong>.<br>
+            NIM yang sudah terdaftar akan dilewati.
         </p>
         <form id="form-import">
             <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
@@ -181,22 +192,21 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
             <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
             <input type="hidden" name="action" value="create">
 
+            <div style="margin-bottom:12px;padding:12px;background:#e8f5e9;border-radius:10px;font-size:13px;color:#155724;">
+                ℹ️ <strong>Username otomatis = NIM</strong>, <strong>Password otomatis = tanggal lahir format ddmmyy</strong> (contoh: 01031990)
+            </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
-                <div class="form-group">
-                    <label>Username *</label>
-                    <input type="text" name="username" required placeholder="Username login">
-                </div>
-                <div class="form-group">
-                    <label>Password *</label>
-                    <input type="password" name="password" required placeholder="Password">
-                </div>
                 <div class="form-group">
                     <label>Nama Lengkap *</label>
                     <input type="text" name="nama_lengkap" required placeholder="Nama lengkap">
                 </div>
                 <div class="form-group">
-                    <label>NIM</label>
-                    <input type="text" name="nim" placeholder="NIM (untuk mahasiswa)">
+                    <label>NIM * <small style="color:#888;">(digunakan sebagai username login)</small></label>
+                    <input type="text" name="nim" required placeholder="Nomor Induk Mahasiswa">
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Lahir * <small style="color:#888;">(digunakan sebagai password)</small></label>
+                    <input type="date" name="tanggal_lahir" required>
                 </div>
                 <div class="form-group">
                     <label>Email</label>
@@ -209,10 +219,6 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
                 <div class="form-group">
                     <label>Program Studi</label>
                     <input type="text" name="program_studi" placeholder="Program studi">
-                </div>
-                <div class="form-group">
-                    <label>Fakultas</label>
-                    <input type="text" name="fakultas" placeholder="Fakultas">
                 </div>
                 <div class="form-group">
                     <label>Role</label>
@@ -237,9 +243,9 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Username</th>
+                        <th>NIM (Username)</th>
                         <th>Nama</th>
-                        <th>NIM</th>
+                        <th>Tgl Lahir (Password)</th>
                         <th>Prodi</th>
                         <th>Role</th>
                         <th>Aksi</th>
@@ -249,9 +255,9 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
                     <?php foreach ($users as $i => $u): ?>
                     <tr>
                         <td><?= $i + 1 ?></td>
-                        <td><strong><?= sanitize($u['username']) ?></strong></td>
+                        <td><strong><?= sanitize($u['nim'] ?? $u['username']) ?></strong></td>
                         <td><?= sanitize($u['nama_lengkap']) ?></td>
-                        <td><?= sanitize($u['nim'] ?? '-') ?></td>
+                        <td><?= !empty($u['tanggal_lahir']) ? date('d/m/Y', strtotime($u['tanggal_lahir'])) : '-' ?></td>
                         <td><?= sanitize($u['program_studi'] ?? '-') ?></td>
                         <td>
                             <span class="badge <?= $u['role'] === 'admin' ? 'badge-danger' : 'badge-primary' ?>">
@@ -263,7 +269,7 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
                                 <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
                                 <input type="hidden" name="action" value="reset_password">
                                 <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-warning" data-confirm="Reset password ke '123'?">Reset Pass</button>
+                                <button type="submit" class="btn btn-sm btn-warning" data-confirm="Reset password ke tanggal lahir (ddmmyy)?">Reset Pass</button>
                             </form>
                             <?php if ($u['id'] !== $_SESSION['user_id']): ?>
                             <form method="POST" style="display:inline;">

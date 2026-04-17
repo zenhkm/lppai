@@ -15,10 +15,14 @@ CREATE TABLE users (
     no_hp VARCHAR(20) DEFAULT NULL,
     program_studi VARCHAR(100) DEFAULT NULL,
     fakultas VARCHAR(100) DEFAULT NULL,
+    tanggal_lahir DATE DEFAULT NULL,
     role ENUM('mahasiswa', 'admin') NOT NULL DEFAULT 'mahasiswa',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
+-- Jika database sudah ada, jalankan ALTER ini:
+-- ALTER TABLE users ADD COLUMN tanggal_lahir DATE DEFAULT NULL AFTER fakultas;
 
 -- Tabel Pretes Registration
 CREATE TABLE pretes_registrations (

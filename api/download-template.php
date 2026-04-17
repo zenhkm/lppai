@@ -15,11 +15,11 @@ echo "\xEF\xBB\xBF";
 $out = fopen('php://output', 'w');
 
 // Header row
-fputcsv($out, ['username', 'password', 'nama_lengkap', 'nim', 'email', 'no_hp', 'program_studi', 'fakultas', 'role']);
+fputcsv($out, ['nim', 'nama_lengkap', 'tanggal_lahir', 'email', 'no_hp', 'program_studi', 'role']);
 
-// Contoh data
-fputcsv($out, ['mhs006', 'password123', 'Contoh Mahasiswa', '2024010006', 'contoh@mail.com', '081234567895', 'Teknik Informatika', 'Fakultas Teknik', 'mahasiswa']);
-fputcsv($out, ['mhs007', 'password123', 'Contoh Kedua', '2024010007', 'contoh2@mail.com', '081234567896', 'Manajemen', 'Fakultas Ekonomi', 'mahasiswa']);
+// Contoh data (tanggal_lahir format ddmmyy atau yyyy-mm-dd)
+fputcsv($out, ['2024010006', 'Contoh Mahasiswa', '010390', 'contoh@mail.com', '081234567895', 'Teknik Informatika', 'mahasiswa']);
+fputcsv($out, ['2024010007', 'Contoh Kedua', '150595', 'contoh2@mail.com', '081234567896', 'Manajemen', 'mahasiswa']);
 
 fclose($out);
 exit;
