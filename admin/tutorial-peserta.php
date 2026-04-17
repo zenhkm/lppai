@@ -159,7 +159,7 @@ include __DIR__ . '/../includes/header.php';
                                 <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="reg_id" value="<?= $r['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Hapus data ini?">Hapus</button>
+                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Hapus data ini?" data-table="tutorial_registrations" data-id="<?= $r['id'] ?>">Hapus</button>
                             </form>
                         </td>
                     </tr>

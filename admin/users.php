@@ -292,7 +292,7 @@ document.getElementById('modal-import').addEventListener('click', function(e) {
                                 <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Yakin ingin menghapus user ini?">Hapus</button>
+                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Yakin ingin menghapus user ini?" data-table="users" data-id="<?= $u['id'] ?>">Hapus</button>
                             </form>
                             <?php endif; ?>
                         </td>

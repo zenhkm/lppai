@@ -146,7 +146,7 @@ include __DIR__ . '/../includes/header.php';
                                 <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $s['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Hapus jadwal ini?">Hapus</button>
+                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Hapus jadwal ini?" data-table="pretes_schedules" data-id="<?= $s['id'] ?>">Hapus</button>
                             </form>
                         </td>
                     </tr>

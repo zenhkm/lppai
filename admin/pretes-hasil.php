@@ -160,7 +160,7 @@ include __DIR__ . '/../includes/header.php';
                                 <input type="hidden" name="csrf_token" value="<?= csrfToken() ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $r['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Hapus hasil ini?">Hapus</button>
+                                <button type="submit" class="btn btn-sm btn-danger" data-confirm="Hapus hasil ini?" data-table="pretes_results" data-id="<?= $r['id'] ?>">Hapus</button>
                             </form>
                         </td>
                     </tr>
