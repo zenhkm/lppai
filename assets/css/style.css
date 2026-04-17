@@ -639,3 +639,132 @@ table tr:hover {
     border-top: 1px solid #e0e0e0;
     margin-top: 40px;
 }
+
+/* =================== TOAST NOTIFICATION =================== */
+#toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 400px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    pointer-events: auto;
+    animation: toastIn 0.35s cubic-bezier(.21,1.02,.73,1) both;
+    position: relative;
+    overflow: hidden;
+}
+
+.toast.hide {
+    animation: toastOut 0.3s ease forwards;
+}
+
+.toast-success { background: linear-gradient(135deg, #1a5632, #2d7a4a); }
+.toast-danger  { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+.toast-warning { background: linear-gradient(135deg, #92400e, #d97706); }
+.toast-info    { background: linear-gradient(135deg, #1e40af, #2563eb); }
+
+.toast-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+
+.toast-body { flex: 1; line-height: 1.5; }
+
+.toast-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+.toast-close:hover { color: #fff; }
+
+.toast-progress {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.4);
+    animation: toastProgress linear forwards;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(60px) scale(0.9); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toastOut {
+    to { opacity: 0; transform: translateX(60px) scale(0.9); }
+}
+@keyframes toastProgress {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
+
+/* =================== CONFIRM DIALOG =================== */
+#confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99998;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+}
+#confirm-backdrop.show { display: flex; }
+
+#confirm-dialog {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    text-align: center;
+    animation: dialogIn 0.25s cubic-bezier(.21,1.02,.73,1) both;
+}
+
+@keyframes dialogIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+#confirm-dialog .confirm-icon {
+    font-size: 44px;
+    margin-bottom: 14px;
+    line-height: 1;
+}
+#confirm-dialog h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+#confirm-dialog p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+#confirm-dialog .confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}

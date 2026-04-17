@@ -1,10 +1,98 @@
 // LPPAI Corner - Main JavaScript
 
+/* =============================================
+   TOAST NOTIFICATION
+   Usage: showToast('Pesan berhasil!', 'success')
+   Types: success | danger | warning | info
+   ============================================= */
+function showToast(message, type, duration) {
+    type = type || 'success';
+    duration = duration || 4000;
+
+    var icons = { success: '✅', danger: '❌', warning: '⚠️', info: 'ℹ️' };
+
+    var container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    var toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    toast.innerHTML =
+        '<span class="toast-icon">' + (icons[type] || '💬') + '</span>' +
+        '<span class="toast-body">' + message + '</span>' +
+        '<button class="toast-close" aria-label="Tutup">&times;</button>' +
+        '<span class="toast-progress" style="animation-duration:' + duration + 'ms"></span>';
+
+    container.appendChild(toast);
+
+    var closeBtn = toast.querySelector('.toast-close');
+    function dismiss() {
+        toast.classList.add('hide');
+        setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 350);
+    }
+    closeBtn.addEventListener('click', dismiss);
+    setTimeout(dismiss, duration);
+}
+
+/* =============================================
+   CONFIRM DIALOG
+   Usage: showConfirm('Yakin hapus?', fn, 'danger')
+   ============================================= */
+function showConfirm(message, onConfirm, type) {
+    type = type || 'danger';
+    var icons = { danger: '🗑️', warning: '⚠️', info: '❓', success: '✅' };
+    var btnColors = { danger: '#dc2626', warning: '#d97706', info: '#2563eb', success: '#1a5632' };
+
+    var backdrop = document.getElementById('confirm-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'confirm-backdrop';
+        backdrop.innerHTML =
+            '<div id="confirm-dialog">' +
+            '  <div class="confirm-icon" id="confirm-icon"></div>' +
+            '  <h4 id="confirm-title">Konfirmasi</h4>' +
+            '  <p id="confirm-message"></p>' +
+            '  <div class="confirm-actions">' +
+            '    <button id="confirm-cancel" class="btn btn-sm" style="background:#f3f4f6;color:#374151;min-width:90px;">Batal</button>' +
+            '    <button id="confirm-ok" class="btn btn-sm" style="min-width:90px;">Ya, Lanjutkan</button>' +
+            '  </div>' +
+            '</div>';
+        document.body.appendChild(backdrop);
+    }
+
+    document.getElementById('confirm-icon').textContent = icons[type] || '❓';
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-ok').style.background = btnColors[type] || '#dc2626';
+    document.getElementById('confirm-ok').style.color = '#fff';
+    backdrop.classList.add('show');
+
+    function close() { backdrop.classList.remove('show'); }
+
+    var okBtn = document.getElementById('confirm-ok');
+    var cancelBtn = document.getElementById('confirm-cancel');
+
+    // Clone to remove old listeners
+    var newOk = okBtn.cloneNode(true);
+    var newCancel = cancelBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+    newOk.addEventListener('click', function() { close(); if (onConfirm) onConfirm(); });
+    newCancel.addEventListener('click', close);
+    backdrop.addEventListener('click', function(e) { if (e.target === backdrop) close(); });
+}
+
+/* =============================================
+   DOM READY
+   ============================================= */
 document.addEventListener('DOMContentLoaded', function() {
     // Mobile sidebar toggle
-    const hamburger = document.querySelector('.hamburger');
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
+    var hamburger = document.querySelector('.hamburger');
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.querySelector('.sidebar-overlay');
 
     if (hamburger) {
         hamburger.addEventListener('click', function() {
@@ -20,21 +108,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto-dismiss alerts after 5 seconds
-    document.querySelectorAll('.alert').forEach(function(alert) {
-        setTimeout(function() {
-            alert.style.transition = 'opacity 0.5s ease';
-            alert.style.opacity = '0';
-            setTimeout(function() { alert.remove(); }, 500);
-        }, 5000);
+    // Auto-convert PHP .alert blocks to toast (and remove from DOM)
+    document.querySelectorAll('.alert').forEach(function(el) {
+        var type = 'info';
+        if (el.classList.contains('alert-success')) type = 'success';
+        else if (el.classList.contains('alert-danger'))  type = 'danger';
+        else if (el.classList.contains('alert-warning')) type = 'warning';
+        showToast(el.innerHTML, type, 6000);
+        el.remove();
     });
 
-    // Confirm delete actions
+    // Replace browser confirm() on data-confirm buttons
     document.querySelectorAll('[data-confirm]').forEach(function(el) {
         el.addEventListener('click', function(e) {
-            if (!confirm(this.dataset.confirm)) {
-                e.preventDefault();
-            }
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            var msg  = this.dataset.confirm;
+            var type = this.classList.contains('btn-warning') ? 'warning' : 'danger';
+            var form = this.closest('form');
+            var self = this;
+            showConfirm(msg, function() {
+                if (form) {
+                    form.submit();
+                } else if (self.tagName === 'A') {
+                    window.location.href = self.href;
+                }
+            }, type);
         });
     });
 });
