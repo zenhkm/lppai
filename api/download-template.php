@@ -2,10 +2,34 @@
 /**
  * LPPAI Corner - Download Template Import User (Excel)
  */
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../logs/error.log');
+error_reporting(E_ALL);
+
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
-require_once '/public_html/vendor/autoload.php';
+// Cari autoload.php di berbagai kemungkinan path
+$autoloadPaths = [
+    '/public_html/vendor/autoload.php',
+    __DIR__ . '/../../../../vendor/autoload.php',
+    __DIR__ . '/../../../vendor/autoload.php',
+    dirname(__DIR__, 3) . '/vendor/autoload.php',
+];
+$autoloaded = false;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        require_once $path;
+        $autoloaded = true;
+        break;
+    }
+}
+if (!$autoloaded) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'PhpSpreadsheet tidak ditemukan. Paths dicoba: ' . implode(', ', $autoloadPaths)]);
+    exit;
+}
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

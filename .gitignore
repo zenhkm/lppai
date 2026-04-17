@@ -23,6 +23,7 @@ package-lock.json
 # Logs
 *.log
 error_log
+logs/*.log
 
 # Cache
 *.cache

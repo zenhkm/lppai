@@ -38,7 +38,25 @@ if ($file['size'] > 5 * 1024 * 1024) {
     exit;
 }
 
-require_once '/public_html/vendor/autoload.php';
+// Cari autoload.php di berbagai kemungkinan path
+$autoloadPaths = [
+    '/public_html/vendor/autoload.php',
+    __DIR__ . '/../../../../vendor/autoload.php',
+    __DIR__ . '/../../../vendor/autoload.php',
+    dirname(__DIR__, 3) . '/vendor/autoload.php',
+];
+$autoloaded = false;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        require_once $path;
+        $autoloaded = true;
+        break;
+    }
+}
+if (!$autoloaded) {
+    echo json_encode(['success' => false, 'message' => 'PhpSpreadsheet tidak ditemukan. Paths dicoba: ' . implode(', ', $autoloadPaths)]);
+    exit;
+}
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
