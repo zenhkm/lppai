@@ -2,6 +2,22 @@
 /**
  * LPPAI Corner - Import Users dari Excel
  */
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
+// Tangkap semua error/exception sebagai JSON
+set_exception_handler(function($e) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
+    exit;
+});
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => "PHP Error [$errno]: $errstr di $errfile baris $errline"]);
+    exit;
+});
+
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
